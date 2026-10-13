@@ -6,9 +6,15 @@ import pygame
 
 RAIZ = Path(__file__).resolve().parent
 PERSONAGENS = {
-    "cacto": {"nome": "Cacto", "sprite": "cacto.png", "tiro": "tiro do cacto.png", "arma": "Armacacto.png"},
-    "ervilheiro": {"nome": "Ervilheiro", "sprite": "ervilheiro.png", "tiro": "tiro ervilheiro.png", "arma": "armaervilheiro.png"},
-    "lirio": {"nome": "Lírio", "sprite": "lirio.png", "tiro": "tiro do lirio.png", "arma": "Armalirio.png"},
+    "cacto": {"nome": "Cacto", "sprite": "cacto.png", "tiro": "tiro do cacto.png", "arma": "Armacacto.png",
+              "perfil": "Dano alto", "vantagem": "Tiros mais fortes.",
+              "limite": "Move e atira mais devagar.", "vida": 5, "dano": 1.0, "velocidade": 4, "intervalo": 300},
+    "ervilheiro": {"nome": "Ervilheiro", "sprite": "ervilheiro.png", "tiro": "tiro ervilheiro.png", "arma": "armaervilheiro.png",
+                   "perfil": "Agilidade", "vantagem": "Move e atira mais rápido.",
+                   "limite": "Menos vida e dano por tiro.", "vida": 4, "dano": 0.4, "velocidade": 6, "intervalo": 120},
+    "lirio": {"nome": "Lírio", "sprite": "lirio.png", "tiro": "tiro do lirio.png", "arma": "Armalirio.png", "arma_esquerda_primeiro": True,
+              "perfil": "Resistência", "vantagem": "Mais vida para sobreviver.",
+              "limite": "Menor dano por segundo.", "vida": 7, "dano": 0.5, "velocidade": 5, "intervalo": 200},
 }
 
 # As faixas têm células retangulares e resoluções diferentes.
@@ -41,7 +47,9 @@ def carregar_faixa(arquivo, quantidade, altura):
 def carregar_arma(personagem, largura=42, esquerda=False):
     sheet = carregar_imagem("ARTES/" + PERSONAGENS[personagem]["arma"])
     metade = sheet.get_width() // 2
-    sprite = sheet.subsurface((metade if esquerda else 0, 0, metade, sheet.get_height()))
+    # O Lírio traz esquerda/direita; as outras armas trazem direita/esquerda.
+    segunda_metade = esquerda != PERSONAGENS[personagem].get("arma_esquerda_primeiro", False)
+    sprite = sheet.subsurface((metade if segunda_metade else 0, 0, metade, sheet.get_height()))
     sprite = sprite.subsurface(sprite.get_bounding_rect())
     return pygame.transform.scale(sprite, (largura, round(sprite.get_height() * largura / sprite.get_width())))
 

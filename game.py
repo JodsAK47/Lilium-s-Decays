@@ -361,7 +361,7 @@ class Game:
     #HUD
         texto = self.fonte.render(
             f"Rodada: {self.rodada} | Vida: {self.jogador.vida}/{self.jogador.vida_maxima} | "
-            f"Pontos: {self.pontos} | Nível: {self.nivel} | "
+            f"Pontos: {self.pontos} | "
             f"Tempo: {tempo}",
             True,
             COR_TEXTO

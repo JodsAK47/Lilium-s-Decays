@@ -29,6 +29,32 @@ class Evolucao(unittest.TestCase):
         self.jogo.todos_sprites.add(cristal)
         self.jogo.verificar_colisoes()
 
+    def test_perfis_aplicados_aos_tiros_melhorias_e_reinicio(self):
+        esperados = {"cacto": (5, 1.0, 4, 300), "ervilheiro": (4, 0.4, 6, 120),
+                     "lirio": (7, 0.5, 5, 200)}
+        for indice, personagem in enumerate(self.jogo.menu.personagens):
+            self.jogo.menu.selecionado = indice
+            self.jogo.iniciar_partida()
+            jogador = self.jogo.jogador
+            vida, dano, velocidade, intervalo = esperados[personagem]
+            self.assertEqual((jogador.vida, jogador.vida_maxima, jogador.dano_tiro,
+                              jogador.velocidade, jogador.intervalo_tiro),
+                             (vida, vida, dano, velocidade, intervalo))
+            alvo = ZumbiComum(600, 300)
+            self.jogo.inimigos.add(alvo)
+            HABILIDADES[0].aplicar(jogador)
+            HABILIDADES[1].aplicar(jogador)
+            HABILIDADES[2].aplicar(jogador)
+            self.jogo.disparar_tiro()
+            tiro = next(iter(self.jogo.tiros))
+            self.assertAlmostEqual(tiro.dano, dano * 1.2)
+            self.assertAlmostEqual(jogador.intervalo_tiro, intervalo / 1.15)
+            self.assertEqual(jogador.vida, vida + 1)
+            self.jogo.iniciar_partida()
+            self.assertEqual(self.jogo.jogador.dano_tiro, dano)
+            self.assertEqual(self.jogo.jogador.vida, vida)
+        self.jogo.menu.selecionado = 0
+
     def test_custos_crescem_gradualmente(self):
         custos = [xp_para_proximo_nivel(n) for n in range(1, 101)]
         self.assertEqual(custos[:5], [10, 14, 19, 24, 30])

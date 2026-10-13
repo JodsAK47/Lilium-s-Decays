@@ -29,25 +29,19 @@ A proposta combina a progressão rápida e frenética de Brotato com um universo
 
 ## 🌿 Plantas Disponíveis
 
-### 🟢 Ervilheiro
+Cada planta tem atributos próprios. A seleção resume a vantagem e a desvantagem
+de cada estilo; os valores de referência são:
 
-* Alta velocidade de ataque.
-* Dano moderado.
+| Planta | Vida | Dano por tiro | Intervalo entre tiros | Movimento |
+| --- | --- | --- | --- | --- |
+| Cacto | 5 | 1,0 | 300 ms | 4 px/quadro |
+| Ervilheiro | 4 | 0,4 | 120 ms | 6 px/quadro |
+| Lírio | 7 | 0,5 | 200 ms | 5 px/quadro |
 
-### 🌵 Cacto
-
-* Alto dano por disparo.
-* Menor velocidade de movimento.
-
-### 🌻 Girassol Guerreiro
-
-* Regeneração de vida.
-* Atributos equilibrados.
-
-### 🦷 Planta Carnívora
-
-* Especialista em combate corpo a corpo.
-* Grande resistência.
+O Cacto causa mais dano por disparo, mas se move e atira mais devagar.
+O Ervilheiro é ágil e dispara rápido, com menos vida e dano por tiro.
+O Lírio prioriza sobrevivência, com mais vida e menor dano por segundo.
+As melhorias são aplicadas sobre os atributos da planta escolhida e reiniciam a cada partida.
 
 ---
 
@@ -85,8 +79,8 @@ Se uma coleta render vários níveis, cada nível concede uma escolha, em sequê
 Uma nova partida reinicia todos os atributos.
 
 A tela de evolução compara o valor atual do atributo com o valor após a escolha.
-O painel **Suas melhorias** mostra quantas vezes cada habilidade foi adquirida,
-o bônus acumulado e o atributo atual. A quantidade de escolhas pendentes também
+O resumo **Adquiridas** lista apenas as habilidades já escolhidas, com a quantidade
+de escolhas e o bônus acumulado. A quantidade de escolhas pendentes também
 fica visível; o jogo permanece pausado até terminar todas as escolhas.
 
 ### Experiência e progressão
@@ -129,7 +123,7 @@ No menu inicial, clique em **Jogar** ou pressione Enter/Espaço para abrir a sel
 Depois, selecione **Cacto**, **Ervilheiro** ou **Lírio** com o mouse, A/D ou as setas.
 Clique em **Iniciar partida** ou pressione Enter/Espaço para começar.
 Na seleção, **Voltar** ou ESC retorna ao menu inicial.
-Cada planta usa sua animação e seu projétil; os atributos de combate continuam iguais.
+Cada planta usa sua animação e seu projétil; os atributos de combate variam conforme a planta escolhida.
 A seleção mostra apenas as plantas. As três armas aparecem durante a partida, acompanhando a mira automática.
 O cenário da partida usa a textura `ARTES/deserto.png` repetida pelo mapa.
 

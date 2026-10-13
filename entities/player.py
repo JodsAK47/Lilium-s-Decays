@@ -1,14 +1,14 @@
 import math
 import pygame
 from entities.base import Entidade
-from assets import carregar_frames, carregar_arma
+from assets import PERSONAGENS, carregar_frames, carregar_arma
 
 from config import (
     LARGURA,
     ALTURA,
     JOGADOR_VELOCIDADE,
     JOGADOR_VIDA_INICIAL,
-    JOGADOR_TAMANHO, TIRO_DANO, XP_RAIO_ATRACAO
+    JOGADOR_TAMANHO, XP_RAIO_ATRACAO
 )
 
 
@@ -16,12 +16,13 @@ class Jogador(Entidade):
     """Planta selecionada, animada por uma faixa horizontal de sprites."""
 
     def __init__(self, x, y, personagem="cacto"):
-        super().__init__(x, y, JOGADOR_TAMANHO, JOGADOR_VELOCIDADE)
+        perfil = PERSONAGENS[personagem]
+        super().__init__(x, y, JOGADOR_TAMANHO, perfil["velocidade"])
 
-        self.vida = JOGADOR_VIDA_INICIAL
-        self.vida_maxima = JOGADOR_VIDA_INICIAL
-        self.dano_tiro = TIRO_DANO
-        self.intervalo_tiro = 180
+        self.vida = perfil["vida"]
+        self.vida_maxima = perfil["vida"]
+        self.dano_tiro = perfil["dano"]
+        self.intervalo_tiro = perfil["intervalo"]
         self.raio_atracao_xp = XP_RAIO_ATRACAO
         self.perfuracoes = 0
 
@@ -52,7 +53,7 @@ class Jogador(Entidade):
 
     @property
     def posicao_arma(self):
-        return pygame.Vector2(self.rect.center) + pygame.Vector2(0, 8) + self.direcao_mira * 16
+        return pygame.Vector2(self.rect.center) + pygame.Vector2(0, 8) + self.direcao_mira * 36
 
     def desenhar_arma(self, tela):
         esquerda = self.direcao_mira.x < 0
