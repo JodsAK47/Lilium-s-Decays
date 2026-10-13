@@ -29,37 +29,34 @@ A proposta combina a progressão rápida e frenética de Brotato com um universo
 
 ## 🌿 Plantas Disponíveis
 
-### 🟢 Ervilheiro
+Cada planta tem atributos próprios. A seleção resume a vantagem e a desvantagem
+de cada estilo; os valores de referência são:
 
-* Alta velocidade de ataque.
-* Dano moderado.
+| Planta | Vida | Dano por tiro | Intervalo entre tiros | Movimento |
+| --- | --- | --- | --- | --- |
+| Cacto | 5 | 1,0 | 300 ms | 4 px/quadro |
+| Ervilheiro | 4 | 0,4 | 120 ms | 6 px/quadro |
+| Lírio | 7 | 0,5 | 200 ms | 5 px/quadro |
 
-### 🌵 Cacto
-
-* Alto dano por disparo.
-* Menor velocidade de movimento.
-
-### 🌻 Girassol Guerreiro
-
-* Regeneração de vida.
-* Atributos equilibrados.
-
-### 🦷 Planta Carnívora
-
-* Especialista em combate corpo a corpo.
-* Grande resistência.
+O Cacto causa mais dano por disparo, mas se move e atira mais devagar.
+O Ervilheiro é ágil e dispara rápido, com menos vida e dano por tiro.
+O Lírio prioriza sobrevivência, com mais vida e menor dano por segundo.
+As melhorias são aplicadas sobre os atributos da planta escolhida e reiniciam a cada partida.
 
 ---
 
 ## 🧟 Inimigos
 
-| Inimigo        | Características           |
-| -------------- | ------------------------- |
-| Zumbi Comum    | Equilibrado               |
-| Zumbi Corredor | Muito rápido              |
-| Zumbi Tanque   | Grande quantidade de vida |
-| Zumbi Tóxico   | Aplica dano contínuo      |
-| Chefe Zumbi    | Extremamente resistente   |
+| Inimigo | Arte | Comportamento | Aparece |
+| --- | --- | --- | --- |
+| Zumbi Comum | Verde | Persegue a planta; 3 de vida | Rodada 1 |
+| Zumbi Corredor | Amarelo | Mais rápido; 1 de vida | Rodada 1 |
+| Zumbi Tanque | Azul | Lento e resistente; 8 de vida | A partir da rodada 2 |
+| Zumbi Roxo | Roxo | Dispara um poder à distância; 4 de vida | A partir da rodada 3 |
+| Lich | `Litch.png` | Chefe com 35 de vida, barra de vida e rajadas de três magias | Um nas rodadas 5, 10, 15… |
+
+O Lich concede 15 XP ao ser derrotado e não desaparece ao encostar no jogador.
+Após receber dano, a planta ganha um segundo de proteção, indicado por um círculo.
 
 ---
 
@@ -80,6 +77,25 @@ As melhorias se acumulam durante a partida; os percentuais são aplicados sobre
 o valor atual. Cada projétil causa dano apenas uma vez em cada inimigo.
 Se uma coleta render vários níveis, cada nível concede uma escolha, em sequência.
 Uma nova partida reinicia todos os atributos.
+
+A tela de evolução compara o valor atual do atributo com o valor após a escolha.
+O resumo **Adquiridas** lista apenas as habilidades já escolhidas, com a quantidade
+de escolhas e o bônus acumulado. A quantidade de escolhas pendentes também
+fica visível; o jogo permanece pausado até terminar todas as escolhas.
+
+### Experiência e progressão
+
+O XP aparece como cristais com facetas e brilho animado: verde para 1 XP,
+azul para recompensas de 2 a 9 XP e roxo para 10 XP ou mais (como o Lich).
+A barra da partida mostra o XP coletado e o custo do próximo nível.
+
+Cada nível exige mais experiência. Os primeiros custos são **10, 14, 19, 24 e
+30 XP**. Para um nível atual `n`, o custo é
+`10 + 4 * (n - 1) + (n - 1) ** 2 // 4`: crescimento gradual, sem multiplicação
+exponencial. O XP excedente é preservado; uma coleta grande pode conceder vários
+níveis, cada um com uma escolha de melhoria. A nova partida reinicia nível,
+experiência, atributos e histórico de habilidades.
+
 
 ---
 
@@ -107,8 +123,14 @@ No menu inicial, clique em **Jogar** ou pressione Enter/Espaço para abrir a sel
 Depois, selecione **Cacto**, **Ervilheiro** ou **Lírio** com o mouse, A/D ou as setas.
 Clique em **Iniciar partida** ou pressione Enter/Espaço para começar.
 Na seleção, **Voltar** ou ESC retorna ao menu inicial.
-Cada planta usa sua animação e seu projétil; os atributos de combate continuam iguais.
+Cada planta usa sua animação e seu projétil; os atributos de combate variam conforme a planta escolhida.
+A seleção mostra apenas as plantas. As três armas aparecem durante a partida, acompanhando a mira automática.
 O cenário da partida usa a textura `ARTES/deserto.png` repetida pelo mapa.
+
+Todos os 17 PNGs de `ARTES` são utilizados: as três plantas, suas três armas e
+três projéteis, os quatro zumbis, o Lich, os poderes do zumbi roxo e do Lich e o deserto.
+As folhas de sprites são recortadas conforme a quantidade de quadros de cada arte,
+preservando suas proporções. O Cacto usa `cacto.png`.
 
 ESC durante a partida retorna ao menu; ao jogar novamente, a partida começa do zero.
 Ao perder toda a vida, o jogo também retorna ao menu inicial. ESC no menu ou **Sair** fecha o jogo.
@@ -144,6 +166,13 @@ Execute o jogo:
 
 ```bash
 python main.py
+```
+
+Para verificar carregamento de todas as artes, animações, ataques, colisões e rodadas
+sem abrir uma janela:
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
 ```
 
 ---

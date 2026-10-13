@@ -1,14 +1,14 @@
 import math
 import pygame
 from entities.base import Entidade
-from assets import carregar_frames
+from assets import PERSONAGENS, carregar_frames, carregar_arma
 
 from config import (
     LARGURA,
     ALTURA,
     JOGADOR_VELOCIDADE,
     JOGADOR_VIDA_INICIAL,
-    JOGADOR_TAMANHO, TIRO_DANO, XP_RAIO_ATRACAO
+    JOGADOR_TAMANHO, XP_RAIO_ATRACAO
 )
 
 
@@ -16,12 +16,13 @@ class Jogador(Entidade):
     """Planta selecionada, animada por uma faixa horizontal de sprites."""
 
     def __init__(self, x, y, personagem="cacto"):
-        super().__init__(x, y, JOGADOR_TAMANHO, JOGADOR_VELOCIDADE)
+        perfil = PERSONAGENS[personagem]
+        super().__init__(x, y, JOGADOR_TAMANHO, perfil["velocidade"])
 
-        self.vida = JOGADOR_VIDA_INICIAL
-        self.vida_maxima = JOGADOR_VIDA_INICIAL
-        self.dano_tiro = TIRO_DANO
-        self.intervalo_tiro = 180
+        self.vida = perfil["vida"]
+        self.vida_maxima = perfil["vida"]
+        self.dano_tiro = perfil["dano"]
+        self.intervalo_tiro = perfil["intervalo"]
         self.raio_atracao_xp = XP_RAIO_ATRACAO
         self.perfuracoes = 0
 
@@ -38,11 +39,28 @@ class Jogador(Entidade):
         self.bob_speed = 0.018  # controla a frequência do "pulo"
 
         self.personagem = personagem
+        self.direcao_mira = pygame.Vector2(1, 0)
         self.frames = carregar_frames(personagem, JOGADOR_TAMANHO)
 
         self.image = self.frames[0]
         self.rect = self.image.get_rect(center=(x, y))
         self.base_y = self.rect.centery
+
+    def mirar(self, posicao):
+        direcao = pygame.Vector2(posicao) - self.rect.center
+        if direcao.length_squared():
+            self.direcao_mira = direcao.normalize()
+
+    @property
+    def posicao_arma(self):
+        return pygame.Vector2(self.rect.center) + pygame.Vector2(0, 8) + self.direcao_mira * 36
+
+    def desenhar_arma(self, tela):
+        esquerda = self.direcao_mira.x < 0
+        arma = carregar_arma(self.personagem, esquerda=esquerda)
+        referencia = pygame.Vector2(-1 if esquerda else 1, 0)
+        arma = pygame.transform.rotate(arma, self.direcao_mira.angle_to(referencia))
+        tela.blit(arma, arma.get_rect(center=self.posicao_arma))
 
     def mover(self, dx, dy):
         # mover horizontalmente altera o rect; mover verticalmente altera a
