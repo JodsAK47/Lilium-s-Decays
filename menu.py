@@ -1,7 +1,7 @@
 """Menu inicial e seleção das plantas disponíveis."""
 import pygame
 
-from assets import PERSONAGENS, carregar_frames, carregar_imagem, carregar_arma
+from assets import PERSONAGENS, carregar_frames, carregar_imagem
 from config import LARGURA, ALTURA
 
 
@@ -133,8 +133,6 @@ class MenuInicial:
             frames = carregar_frames(personagem, 120)
             frame = frames[(pygame.time.get_ticks() // 140) % len(frames)]
             tela.blit(frame, frame.get_rect(center=(card.centerx, card.y + 85)))
-            arma = carregar_arma(personagem, 65)
-            tela.blit(arma, arma.get_rect(center=(card.centerx + 30, card.y + 119)))
             self.texto(tela, PERSONAGENS[personagem]["nome"], (card.centerx, card.y + 168))
             if selecionado:
                 self.texto(tela, "SELECIONADO", (card.centerx, card.y + 211), self.fonte_pequena, (194, 229, 112))

@@ -2,7 +2,8 @@ import pygame
 import random
 from assets import criar_mapa
 from menu import MenuInicial
-from habilidades import HABILIDADES
+from habilidades import HABILIDADES, xp_para_proximo_nivel
+from upgrade_ui import TelaUpgrade
 from entities.player import Jogador
 from inimigos1 import XP
 from entities.projectile import Tiro
@@ -25,7 +26,7 @@ class Game:
         pygame.display.set_caption("Lilium's Decay")
         self.clock = pygame.time.Clock()
         self.fonte = pygame.font.SysFont(None, 30)
-        self.fonte_cards = pygame.font.SysFont(None, 28)
+        self.tela_upgrade = TelaUpgrade()
         self.mapa = criar_mapa((LARGURA, ALTURA))
         self.menu = MenuInicial()
         self.estado = "menu"
@@ -51,7 +52,7 @@ class Game:
         self.tempo_inicio = pygame.time.get_ticks()
         self.tempo_final = None
         
-        self.xp_maximo = 10
+        self.xp_maximo = xp_para_proximo_nivel(self.nivel)
         self.spawn_timer = 0
         self.rodando = True
         self.tempo_ultimo_tiro = 0
@@ -67,10 +68,11 @@ class Game:
         self.rects_opcoes = []
         self.opcoes_habilidades = []
         self.melhorias_pendentes = 0
+        self.habilidades_adquiridas = {}
 
     def abrir_escolha_habilidade(self):
         self.opcoes_habilidades = random.sample(HABILIDADES, 3)
-        self.rects_opcoes = [pygame.Rect(140 + i * 320, 260, 280, 280) for i in range(3)]
+        self.rects_opcoes = [rect.copy() for rect in self.tela_upgrade.cards]
         self.menu_upgrade_ativo = True
 
     def escolher_habilidade(self, indice):
@@ -78,6 +80,8 @@ class Game:
             return
         habilidade = self.opcoes_habilidades[indice]
         habilidade.aplicar(self.jogador)
+        atributo = habilidade.atributo
+        self.habilidades_adquiridas[atributo] = self.habilidades_adquiridas.get(atributo, 0) + 1
         self.mostrar_mensagem(habilidade.nome + " adquirida!")
         self.melhorias_pendentes -= 1
         if self.melhorias_pendentes > 0:
@@ -240,6 +244,7 @@ class Game:
         while self.xp >= self.xp_maximo:
             self.xp -= self.xp_maximo
             self.nivel += 1
+            self.xp_maximo = xp_para_proximo_nivel(self.nivel)
             self.melhorias_pendentes += 1
             self.mostrar_mensagem(f"LEVEL UP! Nível {self.nivel}")
         if self.melhorias_pendentes and not self.menu_upgrade_ativo:
@@ -327,39 +332,7 @@ class Game:
         self.mostrar_mensagem(f"Rodada {self.rodada}")
 
     def desenhar_menu_upgrade(self):
-        # Fundo escuro semi-transparente
-        overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180))
-        self.tela.blit(overlay, (0, 0))
-
-        titulo = self.fonte.render("ESCOLHA UMA HABILIDADE", True, (255, 255, 255))
-        self.tela.blit(titulo, titulo.get_rect(center=(LARGURA // 2, 205)))
-        pos_mouse = pygame.mouse.get_pos()
-        for i, (habilidade, rect) in enumerate(zip(self.opcoes_habilidades, self.rects_opcoes)):
-            hover = rect.collidepoint(pos_mouse)
-            pygame.draw.rect(self.tela, (60, 60, 80) if hover else (40, 40, 50), rect, border_radius=12)
-            pygame.draw.rect(self.tela, (255, 215, 0) if hover else (150, 150, 150), rect, 3, border_radius=12)
-            y = rect.y + 35
-            for texto, cor in ((habilidade.nome, (194, 229, 112)), (habilidade.descricao, COR_TEXTO)):
-                linhas = []
-                linha = ""
-                for palavra in texto.split():
-                    candidata = (linha + " " + palavra).strip()
-                    if linha and self.fonte_cards.size(candidata)[0] > rect.width - 32:
-                        linhas.append(linha)
-                        linha = palavra
-                    else:
-                        linha = candidata
-                linhas.append(linha)
-                for linha in linhas:
-                    imagem = self.fonte_cards.render(linha, True, cor)
-                    self.tela.blit(imagem, imagem.get_rect(midtop=(rect.centerx, y)))
-                    y += 30
-                y += 25
-            tecla = self.fonte_cards.render(f"[{i + 1}] Escolher", True, COR_TEXTO)
-            self.tela.blit(tecla, tecla.get_rect(center=(rect.centerx, rect.bottom - 30)))
-        dica = self.fonte_cards.render("Clique em uma opção ou pressione 1, 2 ou 3", True, COR_TEXTO)
-        self.tela.blit(dica, dica.get_rect(center=(LARGURA // 2, 590)))
+        self.tela_upgrade.desenhar(self.tela, self)
 
     def desenhar(self):
         if self.estado == "menu":
@@ -396,33 +369,19 @@ class Game:
 
         self.tela.blit(texto, (10, 10))
 
-    #Barra de XP
-        largura_barra = 400
-        altura_barra = 22
-
-        x_barra = (LARGURA - largura_barra) // 2
-        y_barra = ALTURA - 25
-
-        # Fundo da barra
-        pygame.draw.rect(
-            self.tela,
-            (50, 50, 50),
-            (x_barra, y_barra, largura_barra, altura_barra)
+        # Progresso e custo visíveis mesmo fora da tela de evolução.
+        painel_xp = pygame.Rect(LARGURA // 2 - 220, ALTURA - 52, 440, 44)
+        pygame.draw.rect(self.tela, (16, 32, 31), painel_xp, border_radius=9)
+        rotulo = self.tela_upgrade.fontes[19].render(
+            f"NÍVEL {self.nivel}    {self.xp} / {self.xp_maximo} XP    PRÓXIMO: {self.nivel + 1}",
+            True, (206, 241, 215),
         )
-
-        # Progresso
-        progresso = self.xp / self.xp_maximo
-
-        pygame.draw.rect(
-            self.tela,
-            (0, 255, 100),
-            (
-                x_barra,
-                y_barra,
-                largura_barra * progresso,
-                altura_barra
-            )
-        )
+        self.tela.blit(rotulo, rotulo.get_rect(midtop=(painel_xp.centerx, painel_xp.y + 6)))
+        barra = pygame.Rect(painel_xp.x + 14, painel_xp.y + 29, painel_xp.width - 28, 7)
+        pygame.draw.rect(self.tela, (46, 66, 55), barra, border_radius=3)
+        progresso = min(1, self.xp / self.xp_maximo)
+        if progresso:
+            pygame.draw.rect(self.tela, (96, 223, 161), (barra.x, barra.y, round(barra.width * progresso), barra.height), border_radius=3)
         y_mensagem = 100
         for mensagem in self.mensagens:
             texto_renderizado = self.fonte.render(mensagem["texto"], True, COR_MENSAGEM)

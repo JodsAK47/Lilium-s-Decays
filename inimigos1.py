@@ -1,6 +1,6 @@
 """Inimigos animados, ataques e experiência coletável."""
 import pygame
-from assets import INIMIGOS, carregar_faixa
+from assets import INIMIGOS, carregar_faixa, carregar_cristal_xp
 from entities.projectile import PoderInimigo
 from config import XP_VELOCIDADE_ATRACAO, LARGURA, ALTURA
 
@@ -102,13 +102,17 @@ class XP(pygame.sprite.Sprite):
         self.velocidade = XP_VELOCIDADE_ATRACAO
 
 
-        self.image = pygame.Surface((15, 15))
-        self.image.fill((0, 255, 0))
-
+        tipo = "chefe" if quantidade >= 10 else "raro" if quantidade >= 2 else "comum"
+        self.frames = carregar_cristal_xp(tipo)
+        self.tempo_animacao = (x + y) % 40
+        self.image = self.frames[0]
+        self.posicao = pygame.Vector2(x, y)
         self.rect = self.image.get_rect(center=(x, y))
 
     def update(self,jogador):
-        xp_pos = pygame.math.Vector2(self.rect.center)
+        self.tempo_animacao += 1
+        self.image = self.frames[(self.tempo_animacao // 10) % len(self.frames)]
+        xp_pos = self.posicao
         jogador_pos = pygame.math.Vector2(jogador.rect.center)
 
         distancia = xp_pos.distance_to(jogador_pos)
@@ -116,5 +120,5 @@ class XP(pygame.sprite.Sprite):
         # só se move se estiver dentro do raio de atração
         if distancia <= jogador.raio_atracao_xp and distancia > 0:
             direcao = (jogador_pos - xp_pos).normalize()
-            self.rect.x += direcao.x * self.velocidade
-            self.rect.y += direcao.y * self.velocidade
+            self.posicao += direcao * min(self.velocidade, distancia)
+            self.rect.center = (round(self.posicao.x), round(self.posicao.y))

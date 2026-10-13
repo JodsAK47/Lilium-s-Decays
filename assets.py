@@ -74,6 +74,31 @@ def carregar_tiro(personagem):
     return pygame.transform.scale(sprite, (largura * 2, sheet.get_height() * 2))
 
 
+@lru_cache(maxsize=3)
+def carregar_cristal_xp(tipo):
+    """Cristal de pixel art com facetas, halo e brilho animado."""
+    cor, luz, raio = {
+        "comum": ((52, 217, 134), (184, 255, 224), 8),
+        "raro": ((50, 186, 241), (200, 249, 255), 10),
+        "chefe": ((177, 107, 246), (249, 220, 255), 12),
+    }[tipo]
+    frames = []
+    for fase in range(4):
+        imagem = pygame.Surface((36, 36), pygame.SRCALPHA)
+        pygame.draw.circle(imagem, (*cor, 20 + fase * 8), (18, 18), raio + 5)
+        topo, direita, baixo, esquerda = (18, 18-raio), (18+raio-2, 17), (18, 20+raio), (20-raio, 17)
+        pygame.draw.polygon(imagem, (16, 43, 53), (topo, direita, baixo, esquerda))
+        pygame.draw.polygon(imagem, cor, (topo, direita, baixo, esquerda))
+        pygame.draw.polygon(imagem, luz, (topo, (18, 18), esquerda))
+        pygame.draw.polygon(imagem, tuple(c // 2 for c in cor), ((18, 18), direita, baixo))
+        pygame.draw.polygon(imagem, (19, 53, 63), (topo, direita, baixo, esquerda), 1)
+        if fase in (1, 2):
+            pygame.draw.line(imagem, (240, 255, 255), (25, 7), (25, 13), 2)
+            pygame.draw.line(imagem, (240, 255, 255), (23, 9), (28, 9), 2)
+        frames.append(imagem)
+    return tuple(frames)
+
+
 def criar_mapa(tamanho):
     piso = carregar_imagem("ARTES/deserto.png")
     mapa = pygame.Surface(tamanho)

@@ -84,6 +84,25 @@ o valor atual. Cada projétil causa dano apenas uma vez em cada inimigo.
 Se uma coleta render vários níveis, cada nível concede uma escolha, em sequência.
 Uma nova partida reinicia todos os atributos.
 
+A tela de evolução compara o valor atual do atributo com o valor após a escolha.
+O painel **Suas melhorias** mostra quantas vezes cada habilidade foi adquirida,
+o bônus acumulado e o atributo atual. A quantidade de escolhas pendentes também
+fica visível; o jogo permanece pausado até terminar todas as escolhas.
+
+### Experiência e progressão
+
+O XP aparece como cristais com facetas e brilho animado: verde para 1 XP,
+azul para recompensas de 2 a 9 XP e roxo para 10 XP ou mais (como o Lich).
+A barra da partida mostra o XP coletado e o custo do próximo nível.
+
+Cada nível exige mais experiência. Os primeiros custos são **10, 14, 19, 24 e
+30 XP**. Para um nível atual `n`, o custo é
+`10 + 4 * (n - 1) + (n - 1) ** 2 // 4`: crescimento gradual, sem multiplicação
+exponencial. O XP excedente é preservado; uma coleta grande pode conceder vários
+níveis, cada um com uma escolha de melhoria. A nova partida reinicia nível,
+experiência, atributos e histórico de habilidades.
+
+
 ---
 
 ## 🎯 Objetivo
@@ -111,7 +130,7 @@ Depois, selecione **Cacto**, **Ervilheiro** ou **Lírio** com o mouse, A/D ou as
 Clique em **Iniciar partida** ou pressione Enter/Espaço para começar.
 Na seleção, **Voltar** ou ESC retorna ao menu inicial.
 Cada planta usa sua animação e seu projétil; os atributos de combate continuam iguais.
-As três armas aparecem na seleção e durante a partida, acompanhando a mira automática.
+A seleção mostra apenas as plantas. As três armas aparecem durante a partida, acompanhando a mira automática.
 O cenário da partida usa a textura `ARTES/deserto.png` repetida pelo mapa.
 
 Todos os 17 PNGs de `ARTES` são utilizados: as três plantas, suas três armas e
