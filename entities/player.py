@@ -1,7 +1,7 @@
 import math
 import pygame
 from entities.base import Entidade
-from assets import carregar_frames
+from assets import carregar_frames, carregar_arma
 
 from config import (
     LARGURA,
@@ -38,11 +38,28 @@ class Jogador(Entidade):
         self.bob_speed = 0.018  # controla a frequência do "pulo"
 
         self.personagem = personagem
+        self.direcao_mira = pygame.Vector2(1, 0)
         self.frames = carregar_frames(personagem, JOGADOR_TAMANHO)
 
         self.image = self.frames[0]
         self.rect = self.image.get_rect(center=(x, y))
         self.base_y = self.rect.centery
+
+    def mirar(self, posicao):
+        direcao = pygame.Vector2(posicao) - self.rect.center
+        if direcao.length_squared():
+            self.direcao_mira = direcao.normalize()
+
+    @property
+    def posicao_arma(self):
+        return pygame.Vector2(self.rect.center) + pygame.Vector2(0, 8) + self.direcao_mira * 16
+
+    def desenhar_arma(self, tela):
+        esquerda = self.direcao_mira.x < 0
+        arma = carregar_arma(self.personagem, esquerda=esquerda)
+        referencia = pygame.Vector2(-1 if esquerda else 1, 0)
+        arma = pygame.transform.rotate(arma, self.direcao_mira.angle_to(referencia))
+        tela.blit(arma, arma.get_rect(center=self.posicao_arma))
 
     def mover(self, dx, dy):
         # mover horizontalmente altera o rect; mover verticalmente altera a

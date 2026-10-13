@@ -53,13 +53,16 @@ A proposta combina a progressão rápida e frenética de Brotato com um universo
 
 ## 🧟 Inimigos
 
-| Inimigo        | Características           |
-| -------------- | ------------------------- |
-| Zumbi Comum    | Equilibrado               |
-| Zumbi Corredor | Muito rápido              |
-| Zumbi Tanque   | Grande quantidade de vida |
-| Zumbi Tóxico   | Aplica dano contínuo      |
-| Chefe Zumbi    | Extremamente resistente   |
+| Inimigo | Arte | Comportamento | Aparece |
+| --- | --- | --- | --- |
+| Zumbi Comum | Verde | Persegue a planta; 3 de vida | Rodada 1 |
+| Zumbi Corredor | Amarelo | Mais rápido; 1 de vida | Rodada 1 |
+| Zumbi Tanque | Azul | Lento e resistente; 8 de vida | A partir da rodada 2 |
+| Zumbi Roxo | Roxo | Dispara um poder à distância; 4 de vida | A partir da rodada 3 |
+| Lich | `Litch.png` | Chefe com 35 de vida, barra de vida e rajadas de três magias | Um nas rodadas 5, 10, 15… |
+
+O Lich concede 15 XP ao ser derrotado e não desaparece ao encostar no jogador.
+Após receber dano, a planta ganha um segundo de proteção, indicado por um círculo.
 
 ---
 
@@ -108,7 +111,13 @@ Depois, selecione **Cacto**, **Ervilheiro** ou **Lírio** com o mouse, A/D ou as
 Clique em **Iniciar partida** ou pressione Enter/Espaço para começar.
 Na seleção, **Voltar** ou ESC retorna ao menu inicial.
 Cada planta usa sua animação e seu projétil; os atributos de combate continuam iguais.
+As três armas aparecem na seleção e durante a partida, acompanhando a mira automática.
 O cenário da partida usa a textura `ARTES/deserto.png` repetida pelo mapa.
+
+Todos os 17 PNGs de `ARTES` são utilizados: as três plantas, suas três armas e
+três projéteis, os quatro zumbis, o Lich, os poderes do zumbi roxo e do Lich e o deserto.
+As folhas de sprites são recortadas conforme a quantidade de quadros de cada arte,
+preservando suas proporções. O Cacto usa `cacto.png`.
 
 ESC durante a partida retorna ao menu; ao jogar novamente, a partida começa do zero.
 Ao perder toda a vida, o jogo também retorna ao menu inicial. ESC no menu ou **Sair** fecha o jogo.
@@ -144,6 +153,13 @@ Execute o jogo:
 
 ```bash
 python main.py
+```
+
+Para verificar carregamento de todas as artes, animações, ataques, colisões e rodadas
+sem abrir uma janela:
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
 ```
 
 ---

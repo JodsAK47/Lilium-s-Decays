@@ -6,7 +6,7 @@ from habilidades import HABILIDADES
 from entities.player import Jogador
 from inimigos1 import XP
 from entities.projectile import Tiro
-from inimigos1 import ZumbiComum, ZumbiCorredor
+from inimigos1 import ZumbiComum, ZumbiCorredor, ZumbiTanque, ZumbiRoxo, Lich
 from config import (
     LARGURA, ALTURA, FPS, COR_TEXTO,
     SPAWN_INTERVALO, TAXA_ZUMBI_COMUM,
@@ -37,7 +37,9 @@ class Game:
         self.todos_sprites = pygame.sprite.Group()
         self.inimigos = pygame.sprite.Group()
         self.tiros = pygame.sprite.Group()      
+        self.poderes_inimigos = pygame.sprite.Group()
         self.xps = pygame.sprite.Group()
+        self.tempo_invulneravel = 0
         
         # Criar jogador
         self.jogador = Jogador(LARGURA // 2, ALTURA - 60, self.menu.personagem)
@@ -160,7 +162,8 @@ class Game:
         if alvo is None:
             return  # sem inimigo na tela, não atira
 
-        jogador_pos = pygame.math.Vector2(self.jogador.rect.center)
+        self.jogador.mirar(alvo.rect.center)
+        jogador_pos = self.jogador.posicao_arma
         alvo_pos = pygame.math.Vector2(alvo.rect.center)
 
         direcao = alvo_pos - jogador_pos
@@ -168,7 +171,7 @@ class Game:
             direcao = direcao.normalize()
 
         tiro = Tiro(
-            *self.jogador.rect.center, direcao, self.jogador.personagem,
+            *jogador_pos, direcao, self.jogador.personagem,
             dano=self.jogador.dano_tiro, perfuracoes=self.jogador.perfuracoes,
         )
         self.todos_sprites.add(tiro)
@@ -190,11 +193,24 @@ class Game:
             x = LARGURA + 40
             y = random.randint(-40, ALTURA + 40)
 
-        #aleatoriedade dos zumbis
-        if random.random() < TAXA_ZUMBI_COMUM:
-            novo_inimigo = ZumbiComum(x, y)
+        # Um chefe garantido a cada cinco rodadas, dentro da cota da onda.
+        if self.rodada % 5 == 0 and self.inimigos_spawnados == 0:
+            novo_inimigo = Lich(x, y)
+            self.mostrar_mensagem("O Lich chegou!")
+        elif self.rodada == 2 and self.inimigos_spawnados == 0:
+            novo_inimigo = ZumbiTanque(x, y)
+        elif self.rodada == 3 and self.inimigos_spawnados == 0:
+            novo_inimigo = ZumbiRoxo(x, y)
         else:
-            novo_inimigo = ZumbiCorredor(x, y)
+            tipos = [ZumbiComum, ZumbiCorredor]
+            pesos = [TAXA_ZUMBI_COMUM, 1 - TAXA_ZUMBI_COMUM]
+            if self.rodada >= 2:
+                tipos.append(ZumbiTanque)
+                pesos.append(0.2)
+            if self.rodada >= 3:
+                tipos.append(ZumbiRoxo)
+                pesos.append(0.2)
+            novo_inimigo = random.choices(tipos, weights=pesos, k=1)[0](x, y)
 
         self.todos_sprites.add(novo_inimigo)
         self.inimigos.add(novo_inimigo)
@@ -229,9 +245,16 @@ class Game:
         if self.melhorias_pendentes and not self.menu_upgrade_ativo:
             self.abrir_escolha_habilidade()
 
-        #colisão zumbi e jogador
-        if pygame.sprite.spritecollide(self.jogador, self.inimigos, True):
-            if self.jogador.tomar_dano():
+        contatos = pygame.sprite.spritecollide(self.jogador, self.inimigos, False)
+        poderes = pygame.sprite.spritecollide(self.jogador, self.poderes_inimigos, True)
+        if (contatos or poderes) and not self.tempo_invulneravel:
+            # O chefe precisa ser derrotado com tiros, inclusive após encostar.
+            for inimigo in contatos:
+                if not inimigo.chefe:
+                    inimigo.kill()
+            self.tempo_invulneravel = 60
+            dano = max((poder.dano for poder in poderes), default=1)
+            if self.jogador.tomar_dano(dano):
                 self.mostrar_mensagem("GAME OVER!", duracao=999999)
                 self.tempo_final = pygame.time.get_ticks()
                 self.estado = "menu"
@@ -241,6 +264,7 @@ class Game:
         # menu de habilidade ativo pauso o jogo   
         if self.estado != "jogo" or self.menu_upgrade_ativo:
             return
+        self.tempo_invulneravel = max(0, self.tempo_invulneravel - 1)
         
          # Atualiza o tempo de vida das mensagens na tela
         for mensagem in self.mensagens[:]:
@@ -273,9 +297,17 @@ class Game:
 
         self.jogador.update()
         self.tiros.update()
+        self.poderes_inimigos.update()
 
         for inimigo in self.inimigos:
             inimigo.update(self.jogador)
+            poderes = inimigo.atacar(self.jogador)
+            self.poderes_inimigos.add(*poderes)
+            self.todos_sprites.add(*poderes)
+
+        alvo = self.buscar_inimigo_mais_proximo()
+        if alvo is not None:
+            self.jogador.mirar(alvo.rect.center)
 
         for xp in self.xps:
             xp.update(self.jogador)
@@ -336,6 +368,14 @@ class Game:
             return
         self.tela.blit(self.mapa, (0, 0))
         self.todos_sprites.draw(self.tela)
+        self.jogador.desenhar_arma(self.tela)
+        if self.tempo_invulneravel:
+            pygame.draw.circle(self.tela, (235, 240, 180), self.jogador.rect.center, 30, 2)
+        for inimigo in self.inimigos:
+            if inimigo.chefe:
+                barra = pygame.Rect(inimigo.rect.centerx - 45, inimigo.rect.top - 12, 90, 7)
+                pygame.draw.rect(self.tela, (40, 20, 45), barra)
+                pygame.draw.rect(self.tela, (191, 75, 235), (barra.x, barra.y, round(barra.width * max(0, inimigo.vida) / inimigo.vida_maxima), barra.height))
         pygame.draw.rect(self.tela, (30, 40, 30), (0, 0, LARGURA, 42))
 
     #Relógio
